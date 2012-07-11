@@ -97,6 +97,7 @@ for s in $(cat /proc/cmdline); do
 	crowbar.debug)
 	    sed -i -e '/config.log_level/ s/^#//' \
 		-e '/config.logger.level/ s/^#//' \
+
 		/opt/dell/barclamps/crowbar/crowbar_framework/config/environments/production.rb
 	    ;;
 
@@ -104,6 +105,10 @@ for s in $(cat /proc/cmdline); do
 done
 
 if ! grep -q '192\.168\.124\.10' /etc/network/interfaces; then
+
+# delete any old lines for eth0 from interfaces, sometimes a dhcp line is still present
+	sed -i.back -e '/eth0/ d' /etc/network/interfaces
+
     cat >> /etc/network/interfaces <<EOF
 auto eth0
 iface eth0 inet static
