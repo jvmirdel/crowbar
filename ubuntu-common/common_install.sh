@@ -119,3 +119,37 @@ fi
 
 mkdir -p /opt/dell/bin
 ln -s /tftpboot/ubuntu_dvd/extra/install /opt/dell/bin/install-crowbar
+cat > /opt/dell/bin/tailor-install.sh <<EOF
+#! /bin/bash
+
+# Simple script to overwrite files with a version that has a tag one it
+#ie: any file that ends in .admin is used to overwrite it's base name, ie: mv X.admin X
+# this allows us to have a bc-network-template.json for each of our cluster types in the iso
+# and any other local customizations
+
+INSTALL=$1
+BASE=/opt/dell
+INSTALLS="alpha beta admin" 
+if [ -z "${INSTALL}" ]; then
+	echo "Must specify an install name. One of $INSTALLS suggested" 1>&2
+	exit 1
+fi
+
+TEST=${BASE}/barclamps/network/chef/data_bags/crowbar/bc-template-network.json.${INSTALL}
+if [ ! -r ${TEST} ]; then
+	echo "No customized network config found for install type ${INSTALL}, aborting" 1>&2
+	exit 1
+fi
+
+find ${BASE}/barclamps -name "*.${INSTALL}" -print | while read a; do
+	BASENAME=$(basename "$a" ".${INSTALL}")
+	mv -f "${a}" $(dirname "$a")/"${BASENAME}"
+done
+
+# Prune the files specific to other installs to avoid issues
+for a in ${INSTALLS}; do
+	find ${BASE}/barclamps -name "*.${a}" -print0 | xargs -0 rm -r 2>/dev/null
+done
+
+EOF
+chmod uog+x /opt/dell/bin/tailor-install.sh
