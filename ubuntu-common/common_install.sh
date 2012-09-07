@@ -119,7 +119,7 @@ fi
 
 mkdir -p /opt/dell/bin
 ln -s /tftpboot/ubuntu_dvd/extra/install /opt/dell/bin/install-crowbar
-cat > /opt/dell/bin/tailor-install.sh <<EOF
+cat > /opt/dell/bin/tailor-install.sh <<'EOF'
 #! /bin/bash
 
 # Simple script to overwrite files with a version that has a tag one it
